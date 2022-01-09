@@ -1,6 +1,6 @@
 # config version 1.0
 general:
-  configVersion: 2
+  configVersion: 4
   dropIfInventoryIsFull: true
   checkTicks: 3600 # 20 ticks in one second
   chatPrefix: IDL
