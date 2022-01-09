@@ -1,5 +1,7 @@
 # ItemDatabaseLink
 
+[![Packaing Jar And Upload](https://github.com/assada/ItemDatabaseLink/actions/workflows/maven.yml/badge.svg)](https://github.com/assada/ItemDatabaseLink/actions/workflows/maven.yml)
+
 ## Description
 With IDL you can send some materials/items to players via database.
 
