@@ -1,5 +1,7 @@
 package idl.Data;
 
+import java.util.Date;
+
 public class Item {
     private int id;
     private String uuid;
@@ -7,14 +9,16 @@ public class Item {
     private String value;
     private int qty;
     private int status;
+    private Date created;
 
-    public Item(int id, String uuid, String type, String value, int qty, int status) {
+    public Item(int id, String uuid, String type, String value, int qty, int status, Date created) {
         this.setId(id);
         this.setUuid(uuid);
         this.setType(type);
         this.setValue(value);
         this.setQty(qty);
         this.setStatus(status);
+        this.setCreated(created);
     }
 
     public String getValue() {
@@ -63,5 +67,13 @@ public class Item {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
     }
 }

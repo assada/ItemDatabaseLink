@@ -20,8 +20,8 @@ public class LoginListener implements Listener {
     public void onAuth(LoginEvent event) {
         Player player = event.getPlayer();
         int newItems = this.checker.check(player);
-        if(newItems > 0) {
-            player.sendMessage(ChatColor.DARK_GREEN + "["+config.getString("general.chatPrefix")+ChatColor.DARK_GREEN + "]" + ChatColor.GREEN +"Got "+ChatColor.WHITE+"%d"+ChatColor.GREEN+" new items for you. Use "+ChatColor.YELLOW+"/get"+ChatColor.GREEN+" command to get it!".formatted(newItems));
+        if (newItems > 0) {
+            player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Got " + ChatColor.WHITE + newItems + ChatColor.GREEN + " new items for you. Use " + ChatColor.YELLOW + "/get" + ChatColor.GREEN + " command to get it!");
         }
     }
 }

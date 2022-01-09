@@ -1,6 +1,5 @@
-# config version 1.0
 general:
-  configVersion: 4
+  configVersion: 5
   dropIfInventoryIsFull: true
   checkTicks: 3600 # 20 ticks in one second
   chatPrefix: IDL
@@ -12,3 +11,4 @@ mysql:
   database: minecraft
   user: root
   password: 1234
+  autoMigration: true

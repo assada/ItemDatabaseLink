@@ -14,24 +14,36 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Bukkit.getLogger().info(ChatColor.GREEN + "["+this.getName()+"] Enabled " + this.getName());
-        if(config.getInt("general.configVersion", 1) < 4) { //config migration
-            config.set("general.configVersion", 4);
-            config.set("general.checkTicks", 3600);
-            config.set("general.chatPrefix", "IDL");
+        Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Enabled " + this.getName());
+        if (config.getInt("general.configVersion", 1) < 5) { //config migration
+            if (config.getInt("general.configVersion", 1) < 4) {
+                config.set("general.configVersion", 4);
+                config.set("general.checkTicks", 3600);
+                config.set("general.chatPrefix", "IDL");
+                Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 4");
+            }
+            if (config.getInt("general.configVersion", 1) < 5) {
+                config.set("general.configVersion", 5);
+                config.set("mysql.autoMigration", true);
+                Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 5");
+            }
+
             this.saveConfig();
         } else {
+            Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Creating default config");
             this.saveDefaultConfig();
         }
 
-        ItemDataSource itemDataSource = new ItemMysqlDataSource(dataSource);
+        ItemDataSource itemDataSource = new ItemMysqlDataSource(dataSource, config.getString("mysql.database", "minecraft"));
         ItemChecker itemChecker = new DatabaseItemChecker(itemDataSource);
         Listener listener;
 
-        itemDataSource.migrate();
+        if (config.getBoolean("mysql.autoMigration", true)) {
+            itemDataSource.migrate();
+        }
 
         if (config.getBoolean("integration.AuthMe") && getServer().getPluginManager().getPlugin("AuthMe") != null) {
-            Bukkit.getLogger().info(ChatColor.GREEN + "["+this.getName()+"] AuthMe detected! Using Login event instead Join...");
+            Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] AuthMe detected! Using Login event instead Join...");
             listener = new LoginListener(itemChecker, config);
         } else {
             listener = new JoinListener(itemChecker, config);
@@ -44,7 +56,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        Bukkit.getLogger().info(ChatColor.GREEN + "["+this.getName()+"] Disabled " + this.getName());
+        Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Disabled " + this.getName());
         dataSource.close();
     }
 }

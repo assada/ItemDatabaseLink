@@ -13,12 +13,12 @@ public class MysqlDataSource {
 
     public MysqlDataSource(FileConfiguration configuration) {
         config.setJdbcUrl("jdbc:mysql://%s:%d/%s".formatted(configuration.getString("mysql.host", "localhost"), configuration.getInt("mysql.port", 3306), configuration.getString("mysql.database", "minecraft")));
-        config.setUsername( configuration.getString("mysql.username", "root") );
-        config.setPassword( configuration.getString("mysql.password", "") );
-        config.addDataSourceProperty( "cachePrepStmts" , "true" );
-        config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
-        config.addDataSourceProperty( "prepStmtCacheSqlLimit" , "2048" );
-        ds = new HikariDataSource( config );
+        config.setUsername(configuration.getString("mysql.username", "root"));
+        config.setPassword(configuration.getString("mysql.password", ""));
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        ds = new HikariDataSource(config);
     }
 
     public Connection getConnection() throws SQLException {

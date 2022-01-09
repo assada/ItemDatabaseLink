@@ -19,10 +19,10 @@ public class ItemCheckTask implements Runnable {
     @Override
     public void run() {
         Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
-        for (Player player: players) {
+        for (Player player : players) {
             int newItems = this.checker.check(player);
-            if(newItems > 0) {
-                player.sendMessage(ChatColor.DARK_GREEN + "["+config.getString("general.chatPrefix")+ChatColor.DARK_GREEN + "]" + ChatColor.GREEN +"Got "+ChatColor.WHITE+"%d"+ChatColor.GREEN+" new items for you. Use "+ChatColor.YELLOW+"/get"+ChatColor.GREEN+" command to get it!".formatted(newItems));
+            if (newItems > 0) {
+                player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Got " + ChatColor.WHITE + newItems + ChatColor.GREEN + " new items for you. Use " + ChatColor.YELLOW + "/get" + ChatColor.GREEN + " command to get it!");
             }
         }
     }
