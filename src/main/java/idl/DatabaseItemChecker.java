@@ -1,28 +1,37 @@
 package idl;
 
-import com.zaxxer.hikari.HikariDataSource;
+import idl.Data.Item;
+import idl.DataSource.ItemDataSource;
+import org.bukkit.entity.Player;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseItemChecker implements ItemChecker{
-    private HikariDataSource dataSource;
 
-    public DatabaseItemChecker(HikariDataSource dataSource) {
+    private final ItemDataSource dataSource;
+
+    public DatabaseItemChecker(ItemDataSource dataSource) {
         this.dataSource = dataSource;
+    }
+    @Override
+    public int check(Player player) {
+        if(!player.hasPermission("idl.command.get")) {
+            return 0;
+        }
+        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0); //TODO: Enum status?
+
+        return items.size();
+    }
+
+    public List<Item> get(Player player) {
+        return this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0); //TODO: Enum status?
     }
 
     @Override
-    public void check() {
-
-    }
-
-    public void migrate() {
-        try {
-            PreparedStatement stmt = this.dataSource.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS `idl_items` (`id` INT(11) unsigned NOT NULL AUTO_INCREMENT,`uuid` VARCHAR(36) NOT NULL,`type` VARCHAR(255) NOT NULL,`value` INT(11) unsigned NOT NULL,`qty` INT(11) NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB;");
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void updateStatus(ArrayList<Integer> gotIds, int newStatus) {
+        if(gotIds.size() > 0) {
+            this.dataSource.updateStatus(gotIds, newStatus);
         }
     }
 }

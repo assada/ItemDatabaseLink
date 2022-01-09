@@ -9,3 +9,11 @@ commands:
     usage: /<command>
     permission: idl.command.get
 softdepend: [AuthMe]
+permissions:
+  idl.*:
+    description: Gives access to all commands
+    children:
+      idl.command.get: true
+  idl.command.get:
+    description: Access to get command and all ingame checks
+    default: true

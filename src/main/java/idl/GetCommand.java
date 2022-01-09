@@ -1,5 +1,8 @@
 package idl;
 
+import idl.Data.Item;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,39 +13,61 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GetCommand implements CommandExecutor {
     private FileConfiguration config;
+    private ItemChecker checker;
 
-    public GetCommand(FileConfiguration config) {
+    public GetCommand(FileConfiguration config, ItemChecker checker) {
         this.config = config;
+        this.checker = checker;
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (commandSender instanceof Player player) {
+            HashMap<Integer, ItemStack> items = new HashMap<>();
+            List<Item> itemsRecords = this.checker.get(player);
+            ArrayList<Integer> gotIds = new ArrayList<>();
 
-            ArrayList<ItemStack> items = new ArrayList<>(); //TODO: get from database
-
-            items.add(new ItemStack(Material.DIAMOND, 64));
-            items.add(new ItemStack(Material.BRICK, 64));
-
-            if (this.getFreeSlots(player) >= items.size()) {
-                for (ItemStack item: items) {
-                    player.getInventory().addItem(item);
-                }
-                player.sendMessage("Done! Check Your inventory!"); //Delete from database
-            } else {
-                if (this.config.getBoolean("general.dropIfInventoryIsFull")) {
-                    Location loc = player.getLocation();
-                    for (ItemStack item: items) {
-                        player.getWorld().dropItem(loc, item);
+            for (Item itemRecord: itemsRecords) {
+                if(itemRecord.getType().equals("Item")) { //TODO: Enum types?
+                    Material mat = Material.matchMaterial(itemRecord.getValue());
+                    if(null != mat) {
+                        items.put(itemRecord.getId(), new ItemStack(mat, itemRecord.getQty()));
+                    } else {
+                        Bukkit.getLogger().warning("["+Bukkit.getName()+"] Item %s not found!".formatted(itemRecord.getValue()));
                     }
-                    player.sendMessage("Done! Items on ground near you!");
+                }
+            }
+            if(items.size() > 0) {
+                if (this.getFreeSlots(player) >= items.size()) {
+                    for(Map.Entry<Integer, ItemStack> entry : items.entrySet()) {
+                        int key = entry.getKey();
+                        ItemStack value = entry.getValue();
+                        player.getInventory().addItem(value);
+                        gotIds.add(key);
+                    }
+                    player.sendMessage(ChatColor.DARK_GREEN + "["+config.getString("general.chatPrefix")+ChatColor.DARK_GREEN + "]" + ChatColor.GREEN +" Done! Check your inventory!");
                 } else {
-                    player.sendMessage("Please clear your inventory first.");
+                    if (this.config.getBoolean("general.dropIfInventoryIsFull")) {
+                        Location loc = player.getLocation();
+                        for(Map.Entry<Integer, ItemStack> entry : items.entrySet()) {
+                            int key = entry.getKey();
+                            ItemStack value = entry.getValue();
+                            player.getWorld().dropItem(loc, value);
+                            gotIds.add(key);
+                        }
+                        player.sendMessage(ChatColor.DARK_GREEN + "["+config.getString("general.chatPrefix")+ChatColor.DARK_GREEN + "]" + ChatColor.GREEN +" Done! Items on ground near you!");
+                    } else {
+                        player.sendMessage(ChatColor.DARK_GREEN + "["+config.getString("general.chatPrefix")+ChatColor.DARK_GREEN + "]" + ChatColor.RED +" Error! Please clear your inventory first.");
+                    }
                 }
 
+                this.checker.updateStatus(gotIds, 1); //TODO: Enum statuses?
             }
         }
 
