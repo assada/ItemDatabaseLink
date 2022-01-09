@@ -1,0 +1,12 @@
+# config version 1.0
+general:
+  configVersion: 2
+  dropIfInventoryIsFull: true
+integration:
+  AuthMe: true
+mysql:
+  host: localhost
+  port: 3306
+  database: minecraft
+  user: root
+  password: 1234
