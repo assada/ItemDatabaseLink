@@ -11,6 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +44,28 @@ public class GetCommand implements CommandExecutor {
                         Bukkit.getLogger().warning("[ItemDatabaseLink] Item %s not found!".formatted(itemRecord.getValue()));
                     }
                 }
+                if (itemRecord.getType().equals("Experience")) {
+                    player.giveExp(itemRecord.getQty());
+                    gotIds.add(itemRecord.getId());
+                    player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! Experience increased!");
+                }
+                if (itemRecord.getType().equals("Heal")) {
+                    player.setHealth(20.0);
+                    player.setFoodLevel(20);
+                    player.setFireTicks(0);
+                    gotIds.add(itemRecord.getId());
+                    player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! You are completely healed and completely full!");
+                }
+                if (itemRecord.getType().equals("PotionEffect")) {
+                    PotionEffectType effectType = PotionEffectType.getByName(itemRecord.getValue().toUpperCase());
+                    if (effectType != null) {
+                        player.addPotionEffect(new PotionEffect(effectType, itemRecord.getQty(), 1, true, true, true));
+                        gotIds.add(itemRecord.getId());
+                        player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! Are you already feeling the effect?");
+                    } else {
+                        Bukkit.getLogger().warning("[ItemDatabaseLink] PotionEffect %s not found!".formatted(itemRecord.getValue()));
+                    }
+                }
             }
             if (items.size() > 0) {
                 if (this.getFreeSlots(player) >= items.size()) {
@@ -66,7 +90,8 @@ public class GetCommand implements CommandExecutor {
                         player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.RED + " Error! Please clear your inventory first.");
                     }
                 }
-
+            }
+            if(gotIds.size() > 0) {
                 this.checker.updateStatus(gotIds, 1); //TODO: Enum statuses?
             }
         }
