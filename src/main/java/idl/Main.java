@@ -5,12 +5,21 @@ import idl.DataSource.ItemMysqlDataSource;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import xyz.janboerman.guilib.GuiLibrary;
+import xyz.janboerman.guilib.api.GuiListener;
 
 public class Main extends JavaPlugin {
     FileConfiguration config = getConfig();
     MysqlDataSource dataSource = new MysqlDataSource(config);
+
+    private GuiListener guiListener;
+
+    public GuiListener getGuiListener() {
+        return guiListener;
+    }
 
     @Override
     public void onEnable() {
@@ -34,6 +43,10 @@ public class Main extends JavaPlugin {
             this.saveDefaultConfig();
         }
 
+        GuiLibrary guiLibrary = (GuiLibrary) getServer().getPluginManager().getPlugin("GuiLib");
+        guiListener = guiLibrary.getGuiListener();
+        assert HandlerList.getRegisteredListeners(guiLibrary).stream().anyMatch(regListener -> regListener.getListener() == guiListener) : "guiListener is not registered.";
+
         ItemDataSource itemDataSource = new ItemMysqlDataSource(dataSource, config.getString("mysql.database", "minecraft"));
         ItemChecker itemChecker = new DatabaseItemChecker(itemDataSource);
         Listener listener;
@@ -51,6 +64,7 @@ public class Main extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(listener, this);
         this.getCommand("get").setExecutor(new GetCommand(config, itemChecker));
+        this.getCommand("claim").setExecutor(new ClaimCommand(this, config, itemChecker));
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemCheckTask(itemChecker, config), 0L, config.getLong("general.checkTicks", 3600L));
     }
 

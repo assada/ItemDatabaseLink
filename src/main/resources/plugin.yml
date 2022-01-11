@@ -8,12 +8,21 @@ commands:
     description: Get all income items
     usage: /<command>
     permission: idl.command.get
+  claim:
+    description: Open UI with income items
+    usage: /<command>
+    permission: idl.command.claim
 softdepend: [AuthMe]
+depend: [GuiLib]
 permissions:
   idl.*:
     description: Gives access to all commands
     children:
       idl.command.get: true
+      idl.command.claim: true
   idl.command.get:
     description: Access to get command and all ingame checks
+    default: true
+  idl.command.claim:
+    description: Access to claim command
     default: true
