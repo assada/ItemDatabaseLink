@@ -1,9 +1,7 @@
 package idl;
 
+import idl.Data.IDLItemStack;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -16,31 +14,37 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class ClaimItemsMenu  extends PageMenu<Main> {
-    /** rewards list */
-    private List<ItemStack> rewards;
-    /** list indices */
+public class ClaimItemsMenu extends PageMenu<Main> {
+    /**
+     * rewards list
+     */
+    private List<IDLItemStack> rewards;
+    /**
+     * list indices
+     */
     private int rewardStartIndex /*inclusive*/, rewardEndIndex /*exclusive*/;
 
     /**
      * Creates the ClaimItemsMenu
-     * @param plugin the plugin
+     *
+     * @param plugin   the plugin
      * @param pageSize the size of the embedded page (9 - 45)
-     * @param rewards a mutable list of reward items
+     * @param rewards  a mutable list of reward items
      */
-    public ClaimItemsMenu(Main plugin, int pageSize, List<ItemStack> rewards) {
+    public ClaimItemsMenu(Main plugin, int pageSize, List<IDLItemStack> rewards) {
         this(plugin, pageSize, rewards, 0, Math.min(rewards.size(), pageSize));
     }
 
     /**
      * Creates the ClaimItemsMenu
-     * @param plugin the plugin
-     * @param pageSize the size of the embedded page (9 - 45)
-     * @param rewards a mutable list of reward items
+     *
+     * @param plugin           the plugin
+     * @param pageSize         the size of the embedded page (9 - 45)
+     * @param rewards          a mutable list of reward items
      * @param rewardStartIndex the lowerbound of the sublist we are displaying (inclusive)
-     * @param rewardEndIndex the upperbound of the sublist we are displaying (exclusive)
+     * @param rewardEndIndex   the upperbound of the sublist we are displaying (exclusive)
      */
-    private ClaimItemsMenu(Main plugin, int pageSize, List<ItemStack> rewards, int rewardStartIndex, int rewardEndIndex) {
+    private ClaimItemsMenu(Main plugin, int pageSize, List<IDLItemStack> rewards, int rewardStartIndex, int rewardEndIndex) {
         super(plugin.getGuiListener(), plugin, new MenuHolder<>(plugin, pageSize), "Claim your items", null, null);
         this.rewards = rewards;
         this.rewardStartIndex = rewardStartIndex;
@@ -63,8 +67,7 @@ public class ClaimItemsMenu  extends PageMenu<Main> {
 
         while (slotIndex < page.getInventory().getSize()) {
             if (listIndex < rewards.size()) {
-                ItemStack reward = rewards.get(listIndex);
-                page.setButton(slotIndex, new ShiftingClaimButton(reward));
+                page.setButton(slotIndex, new ShiftingClaimButton(rewards.get(listIndex)));
             } else {
                 page.unsetButton(slotIndex);
             }
@@ -115,15 +118,38 @@ public class ClaimItemsMenu  extends PageMenu<Main> {
         }
     }
 
-    public class ShiftingClaimButton extends ClaimButton<MenuHolder<Main>> implements ClaimButton.SuccessFulTransferCallback {
-        public ShiftingClaimButton(ItemStack reward) {
-            super(reward, (page, event, itemStack) -> ClaimItemsMenu.this.shiftButtons(event.getSlot()));
+    public class AfterFulTransferCallback implements ClaimButton.SuccessFulTransferCallback {
+        private IDLItemStack idlItemStack;
+
+        public AfterFulTransferCallback(IDLItemStack idlItemStack) {
+            this.idlItemStack = idlItemStack;
         }
 
         @Override
         public void afterTransfer(MenuHolder menuHolder, InventoryClickEvent inventoryClickEvent, ItemStack itemStack) {
-            //HumanEntity player = inventoryClickEvent.getWhoClicked();
-            Bukkit.getLogger().warning("[ItemDatabaseLink] Item goteed!");
+            int clickedAmount = 99999;
+            String clickedMaterialName = "unknown";
+            int slot = inventoryClickEvent.getSlot();
+            if (inventoryClickEvent.getCurrentItem() != null) {
+                clickedAmount = inventoryClickEvent.getCurrentItem().getAmount(); //Result: next in menu ItemStack amount. not real clicked
+                clickedMaterialName = inventoryClickEvent.getCurrentItem().getType().getKey().getKey(); //Result: next in menu ItemStack material. not real clicked
+            }
+
+            Bukkit.getLogger().warning("[ItemDatabaseLink] Name: %s | Slot: %d | clickedAmount: %d | clickedMaterialName: %s items transferred from DB id %d!".formatted(
+                            inventoryClickEvent.getAction().name(),
+                            slot,
+                            clickedAmount,
+                            clickedMaterialName,
+                            idlItemStack.getId()
+                    )
+            );
+            ClaimItemsMenu.this.shiftButtons(inventoryClickEvent.getSlot());
+        }
+    }
+
+    public class ShiftingClaimButton extends ClaimButton<MenuHolder<Main>> {
+        public ShiftingClaimButton(IDLItemStack idlItemStack) {
+            super(idlItemStack.getItemStack(), new AfterFulTransferCallback(idlItemStack));
         }
     }
 }
