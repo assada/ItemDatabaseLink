@@ -131,8 +131,8 @@ public class ClaimItemsMenu extends PageMenu<Main> {
             String clickedMaterialName = "unknown";
             int slot = inventoryClickEvent.getSlot();
             if (inventoryClickEvent.getCurrentItem() != null) {
-                clickedAmount = inventoryClickEvent.getCurrentItem().getAmount(); //Result: next in menu ItemStack amount. not real clicked
-                clickedMaterialName = inventoryClickEvent.getCurrentItem().getType().getKey().getKey(); //Result: next in menu ItemStack material. not real clicked
+                clickedAmount = inventoryClickEvent.getCurrentItem().getAmount();
+                clickedMaterialName = inventoryClickEvent.getCurrentItem().getType().getKey().getKey();
             }
 
             Bukkit.getLogger().warning("[ItemDatabaseLink] Name: %s | Slot: %d | clickedAmount: %d | clickedMaterialName: %s items transferred from DB id %d!".formatted(
