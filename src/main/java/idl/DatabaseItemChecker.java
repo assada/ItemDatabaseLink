@@ -1,5 +1,6 @@
 package idl;
 
+import idl.Data.IDLItemStack;
 import idl.Data.Item;
 import idl.DataSource.ItemDataSource;
 import org.bukkit.entity.Player;
@@ -25,14 +26,22 @@ public class DatabaseItemChecker implements ItemChecker {
         return items.size();
     }
 
-    public List<Item> get(Player player) {
-        return this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0); //TODO: Enum status?
+    public List<IDLItemStack> get(Player player) {
+        List<IDLItemStack> idlItemStacks = new ArrayList<>();
+
+        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0);  //TODO: Enum status?
+        for (Item item : items) {
+            idlItemStacks.add(new IDLItemStack(item));
+        }
+        return idlItemStacks;
     }
 
     @Override
-    public void updateStatus(ArrayList<Integer> gotIds, int newStatus) {
+    public boolean updateStatus(ArrayList<Integer> gotIds, int newStatus) {
         if (gotIds.size() > 0) {
-            this.dataSource.updateStatus(gotIds, newStatus);
+            return this.dataSource.updateStatus(gotIds, newStatus);
         }
+
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 general:
-  configVersion: 5
+  configVersion: 6
   dropIfInventoryIsFull: true
+  addDescriptionToItems: true
   checkTicks: 3600 # 20 ticks in one second
   chatPrefix: IDL
 integration:

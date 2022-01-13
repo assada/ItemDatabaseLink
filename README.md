@@ -26,6 +26,6 @@ Full heal player with uuid 3630a9c7-1b18-3c4d-9cc9-462674d3795e
 
 ## Features
 * Databases: MySQL (more in future if requested)
-* `/get` command for getting all new items to inventory (or dropping on ground if inventory is full)
+* `/claim` command for getting all new items to inventory (or dropping on ground if inventory is full)
 * flexible configuration
 * AuthMe integration (DB requests after successful login)

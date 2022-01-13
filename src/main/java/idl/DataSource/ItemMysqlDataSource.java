@@ -76,8 +76,9 @@ public class ItemMysqlDataSource implements ItemDataSource {
     }
 
     @Override
-    public void updateStatus(ArrayList<Integer> gotIds, int newStatus) { //TODO: check statuses
+    public boolean updateStatus(ArrayList<Integer> gotIds, int newStatus) { //TODO: check statuses
         String ids = "";
+        boolean status = false;
         for (int gotId : gotIds) {
             ids = ids.concat(Integer.toString(gotId)).concat(",");
         }
@@ -86,9 +87,12 @@ public class ItemMysqlDataSource implements ItemDataSource {
         try {
             PreparedStatement stmt = this.dataSource.getConnection().prepareStatement("UPDATE idl_items SET status = %d WHERE id IN (%s);".formatted(newStatus, ids));
             stmt.executeUpdate();
+            status = true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return status;
     }
 
     public static String removeLastCharOptional(String s) {

@@ -1,20 +1,34 @@
 package idl.Data;
 
-public class IDLItemStack {
-    private Integer id;
-    private org.bukkit.inventory.ItemStack itemStack;
+import org.bukkit.inventory.ItemStack;
 
-    public IDLItemStack(Integer id, org.bukkit.inventory.ItemStack itemStack) {
-        this.id = id;
+public class IDLItemStack {
+    private Item item;
+    private ItemStack itemStack;
+
+    public IDLItemStack(Item item, ItemStack itemStack) {
+        this.item = item;
 
         this.itemStack = itemStack;
     }
 
-    public org.bukkit.inventory.ItemStack getItemStack() {
+    public IDLItemStack(Item item) {
+        this.item = item;
+    }
+
+    public ItemStack getItemStack() {
         return itemStack;
     }
 
-    public Integer getId() {
-        return id;
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 }
