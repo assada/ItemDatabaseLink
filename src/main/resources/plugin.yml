@@ -8,7 +8,7 @@ commands:
     description: Claim all items
     usage: /<command>
     permission: idl.command.claim
-softdepend: [AuthMe]
+softdepend: [AuthMe, Vault]
 permissions:
   idl.*:
     description: Gives access to all commands

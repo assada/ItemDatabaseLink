@@ -2,6 +2,8 @@ package idl;
 
 import idl.Data.IDLItemStack;
 import idl.Data.Item;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,10 +23,12 @@ import java.util.*;
 public class ClaimCommand implements CommandExecutor {
     private final FileConfiguration config;
     private final ItemChecker checker;
+    private Economy econ;
 
-    public ClaimCommand(FileConfiguration config, ItemChecker checker) {
+    public ClaimCommand(FileConfiguration config, ItemChecker checker, Economy economy) {
         this.config = config;
         this.checker = checker;
+        this.econ = economy;
     }
 
     @Override
@@ -56,6 +60,17 @@ public class ClaimCommand implements CommandExecutor {
                     gotIds.add(idlItem.getId());
                     player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! You are completely healed and completely full!");
                 }
+                if(idlItem.getType().equals("Money") && null != econ) {
+                    int qty = idlItem.getQty();
+                    EconomyResponse r = econ.depositPlayer(player, qty);
+                    if(r.transactionSuccess()) {
+                        gotIds.add(idlItem.getId());
+                        player.sendMessage(String.format(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + "You were given " + ChatColor.YELLOW + "%s" + ChatColor.GREEN + " and now have "+ChatColor.YELLOW+"%s", econ.format(r.amount), econ.format(r.balance)));
+                    } else {
+                        Bukkit.getLogger().warning("[ItemDatabaseLink] Vault disabled!");
+                        player.sendMessage(String.format("An error occured: %s", r.errorMessage));
+                    }
+                }
                 if (idlItem.getType().equals("PotionEffect")) {
                     PotionEffectType effectType = PotionEffectType.getByName(idlItem.getValue().toUpperCase());
                     if (effectType != null) {
@@ -83,12 +98,12 @@ public class ClaimCommand implements CommandExecutor {
                     }
                     if (freeSlots) {
                         transferred = player.getInventory().addItem(value).isEmpty();
-                        message = ChatColor.GREEN + "Done! Check your inventory!";
+                        message = ChatColor.GREEN + "Done! Check your inventory!"; //TODO: messages
                     } else if (dropIfInventoryIsFull) {
                         Location loc = player.getLocation();
                         player.getWorld().dropItem(loc, value);
                         transferred = true;
-                        message = ChatColor.GREEN + "Done! Items on ground near you!";
+                        message = ChatColor.GREEN + "Done! Items on ground near you!"; //TODO: messages
                     }
                     if (transferred) {
                         gotIds.add(item.getItem().getId());

@@ -16,7 +16,7 @@ abstract class AbstractItemNotifier {
     public void handle(Player player) {
         int newItems = this.checker.check(player);
         if (newItems > 0) {
-            player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Got " + ChatColor.WHITE + newItems + ChatColor.GREEN + " new items for you. Use " + ChatColor.YELLOW + "/claim" + ChatColor.GREEN + " command to claim it!");
+            player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " " + ChatColor.WHITE + ChatColor.BOLD + newItems + ChatColor.RESET + ChatColor.GREEN + " new rewards waiting for you. Use " + ChatColor.BOLD + ChatColor.YELLOW + "/claim" + ChatColor.RESET + ChatColor.GREEN + " command to claim it!");
         }
     }
 }
