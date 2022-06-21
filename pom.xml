@@ -6,7 +6,7 @@
 
     <groupId>dead.guru</groupId>
     <artifactId>ItemDatabaseLink</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.7.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
