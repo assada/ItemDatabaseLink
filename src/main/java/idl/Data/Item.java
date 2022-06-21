@@ -11,6 +11,12 @@ public class Item {
     private int status;
     private Date created;
 
+    public static String ITEM = "ITEM";
+    public static String HEAL = "HEAL";
+    public static String MONEY = "MONEY";
+    public static String EFFECT = "EFFECT";
+    public static String EXPERIENCE = "EXPERIENCE";
+
     public Item(int id, String uuid, String type, String value, int qty, int status, Date created) {
         this.setId(id);
         this.setUuid(uuid);

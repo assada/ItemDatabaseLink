@@ -1,9 +1,10 @@
 general:
-  configVersion: 6
+  configVersion: 7
   dropIfInventoryIsFull: true
   addDescriptionToItems: false
+  description: 'From the Void'
   checkTicks: 3600 # 20 ticks in one second
-  chatPrefix: IDL
+  chatPrefix: '&r[&7IDL&r]'
 integration:
   AuthMe: true
 mysql:
@@ -13,3 +14,12 @@ mysql:
   user: root
   password: 1234
   autoMigration: true
+messages:
+  item_claimed: '&2&lDone! &r&bCheck your inventory!'
+  item_droped: '&2&lDone! &r&bItems on ground near you!'
+  inventory_full: '&c&lOops! &6Please clear your inventory first.'
+  effect_claimed: '&2&lDone! &r&bAre you already feeling the effect?'
+  money_claimed: '&2&lDone! &r&bYou were given &6&l%amount% &r&band now have &6&l%balance%'
+  heal_claimed: '&2&lDone! &r&bYou are completely healed and completely full!'
+  experience_claimed: '&2&lDone! &r&bExperience increased!'
+  new_rewards: '&2%amount% &6new rewards waiting for you. Use &f&l/claim &r&6command to claim it!'

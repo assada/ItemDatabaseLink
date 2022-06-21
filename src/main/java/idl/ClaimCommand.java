@@ -5,7 +5,6 @@ import idl.Data.Item;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -18,17 +17,35 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClaimCommand implements CommandExecutor {
     private final FileConfiguration config;
     private final ItemChecker checker;
-    private Economy econ;
+    private final Economy econ;
+    private final ChatFormatter chatFormatter;
 
-    public ClaimCommand(FileConfiguration config, ItemChecker checker, Economy economy) {
+    public ClaimCommand(FileConfiguration config, ItemChecker checker, Economy economy, ChatFormatter chatFormatter) {
         this.config = config;
         this.checker = checker;
         this.econ = economy;
+        this.chatFormatter = chatFormatter;
+    }
+
+    private ArrayList<PotionEffectType> getBedEffects() {
+        ArrayList<PotionEffectType> badEffects = new ArrayList<>();
+        badEffects.add(PotionEffectType.getByName("POISON"));
+        badEffects.add(PotionEffectType.getByName("WEAKNESS"));
+        badEffects.add(PotionEffectType.getByName("BAD_OMEN"));
+        badEffects.add(PotionEffectType.getByName("BLINDNESS"));
+        badEffects.add(PotionEffectType.getByName("CONFUSION"));
+        badEffects.add(PotionEffectType.getByName("HARM"));
+        badEffects.add(PotionEffectType.getByName("HUNGER"));
+        badEffects.add(PotionEffectType.getByName("SLOW"));
+        badEffects.add(PotionEffectType.getByName("WITHER"));
+
+        return badEffects;
     }
 
     @Override
@@ -39,7 +56,8 @@ public class ClaimCommand implements CommandExecutor {
             ArrayList<Integer> gotIds = new ArrayList<>();
             for (IDLItemStack itemRecord : itemsRecords) {
                 Item idlItem = itemRecord.getItem();
-                if (idlItem.getType().equals("Item")) { //TODO: Enum types?
+
+                if (idlItem.getType().equals(Item.ITEM)) {
                     Material mat = Material.matchMaterial(idlItem.getValue().toUpperCase());
                     if (null != mat) {
                         itemRecord.setItemStack(new ItemStack(mat, idlItem.getQty()));
@@ -48,35 +66,58 @@ public class ClaimCommand implements CommandExecutor {
                         Bukkit.getLogger().warning("[ItemDatabaseLink] Item %s not found!".formatted(idlItem.getValue()));
                     }
                 }
-                if (idlItem.getType().equals("Experience")) {
+
+                if (idlItem.getType().equals(Item.EXPERIENCE)) {
                     player.giveExp(idlItem.getQty());
                     gotIds.add(idlItem.getId());
-                    player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! Experience increased!");
+                    player.sendMessage(this.chatFormatter.format("messages.experience_claimed"));
                 }
-                if (idlItem.getType().equals("Heal")) {
+
+                if (idlItem.getType().equals(Item.HEAL)) {
                     player.setHealth(20.0);
                     player.setFoodLevel(20);
                     player.setFireTicks(0);
-                    gotIds.add(idlItem.getId());
-                    player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! You are completely healed and completely full!");
-                }
-                if(idlItem.getType().equals("Money") && null != econ) {
-                    int qty = idlItem.getQty();
-                    EconomyResponse r = econ.depositPlayer(player, qty);
-                    if(r.transactionSuccess()) {
+                    boolean effects;
+                    try {
+                        effects = true;
+                        this.getBedEffects().forEach((effect) -> {
+                            if(effect == null) {
+                                Bukkit.getLogger().warning("[ItemDatabaseLink] null effect");
+                            } else {
+                                Bukkit.getLogger().info("[ItemDatabaseLink] Ok effect " + effect.getName());
+                                player.removePotionEffect(effect);
+                            }
+
+                        });
+                    } catch (Exception exception) {
+                        effects = false;
+                        Bukkit.getLogger().warning("[ItemDatabaseLink] " + exception.getMessage());
+                    }
+
+                    if (effects) {
                         gotIds.add(idlItem.getId());
-                        player.sendMessage(String.format(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + "You were given " + ChatColor.YELLOW + "%s" + ChatColor.GREEN + " and now have "+ChatColor.YELLOW+"%s", econ.format(r.amount), econ.format(r.balance)));
-                    } else {
-                        Bukkit.getLogger().warning("[ItemDatabaseLink] Vault disabled!");
-                        player.sendMessage(String.format("An error occured: %s", r.errorMessage));
+                        player.sendMessage(this.chatFormatter.format("messages.heal_claimed"));
                     }
                 }
-                if (idlItem.getType().equals("PotionEffect")) {
+
+                if (idlItem.getType().equals(Item.MONEY) && null != econ) {
+                    int qty = idlItem.getQty();
+                    EconomyResponse r = econ.depositPlayer(player, qty);
+                    if (r.transactionSuccess()) {
+                        gotIds.add(idlItem.getId());
+
+                        player.sendMessage(this.chatFormatter.format("messages.money_claimed").replace("%amount%", econ.format(r.amount)).replace("%balance%", econ.format(r.balance)));
+                    } else {
+                        Bukkit.getLogger().warning("[ItemDatabaseLink] Vault disabled!");
+                    }
+                }
+
+                if (idlItem.getType().equals(Item.EFFECT)) {
                     PotionEffectType effectType = PotionEffectType.getByName(idlItem.getValue().toUpperCase());
                     if (effectType != null) {
                         player.addPotionEffect(new PotionEffect(effectType, idlItem.getQty(), 1, true, true, true));
                         gotIds.add(idlItem.getId());
-                        player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "]" + ChatColor.GREEN + " Done! Are you already feeling the effect?");
+                        player.sendMessage(this.chatFormatter.format("messages.effect_claimed"));
                     } else {
                         Bukkit.getLogger().warning("[ItemDatabaseLink] PotionEffect %s not found!".formatted(idlItem.getValue()));
                     }
@@ -86,33 +127,33 @@ public class ClaimCommand implements CommandExecutor {
             if (items.size() > 0) {
                 boolean freeSlots = this.getFreeSlots(player) >= items.size();
                 boolean dropIfInventoryIsFull = this.config.getBoolean("general.dropIfInventoryIsFull");
-                String message = ChatColor.RED + "Oops! Please clear your inventory first.";
+                String message = "messages.item_claimed";
                 boolean transferred = false;
                 for (IDLItemStack item : items) {
                     ItemStack value = item.getItemStack();
                     ItemMeta im = value.getItemMeta();
                     assert im != null;
-                    if(this.config.getBoolean("general.addDescriptionToItems")) {
-                        im.setLore(List.of("From the Void")); //TODO: from config
+                    if (this.config.getBoolean("general.addDescriptionToItems")) {
+                        im.setLore(List.of(this.config.getString("general.description")));
                         value.setItemMeta(im);
                     }
                     if (freeSlots) {
                         transferred = player.getInventory().addItem(value).isEmpty();
-                        message = ChatColor.GREEN + "Done! Check your inventory!"; //TODO: messages
+                        message = "messages.item_claimed";
                     } else if (dropIfInventoryIsFull) {
                         Location loc = player.getLocation();
                         player.getWorld().dropItem(loc, value);
                         transferred = true;
-                        message = ChatColor.GREEN + "Done! Items on ground near you!"; //TODO: messages
+                        message = "messages.item_claimed";
                     }
                     if (transferred) {
                         gotIds.add(item.getItem().getId());
                     }
                 }
-                player.sendMessage(ChatColor.DARK_GREEN + "[" + config.getString("general.chatPrefix") + ChatColor.DARK_GREEN + "] " + message);
+                player.sendMessage(this.chatFormatter.format(message));
             }
             if (gotIds.size() > 0) {
-                this.checker.updateStatus(gotIds, 1); //TODO: Enum statuses?
+                this.checker.updateStatus(gotIds, ItemChecker.DONE); //TODO: Enum statuses?
             }
         }
 

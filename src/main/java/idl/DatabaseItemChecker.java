@@ -21,7 +21,7 @@ public class DatabaseItemChecker implements ItemChecker {
         if (!player.hasPermission("idl.command.get")) {
             return 0;
         }
-        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0); //TODO: Enum status?
+        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), ItemChecker.PENDING);
 
         return items.size();
     }
@@ -29,7 +29,7 @@ public class DatabaseItemChecker implements ItemChecker {
     public List<IDLItemStack> get(Player player) {
         List<IDLItemStack> idlItemStacks = new ArrayList<>();
 
-        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), 0);  //TODO: Enum status?
+        List<Item> items = this.dataSource.getItemForUUID(player.getUniqueId().toString(), ItemChecker.PENDING);
         for (Item item : items) {
             idlItemStacks.add(new IDLItemStack(item));
         }

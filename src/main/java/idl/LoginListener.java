@@ -6,8 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class LoginListener extends AbstractItemNotifier implements Listener {
-    public LoginListener(ItemChecker checker, FileConfiguration config) {
-        super(checker, config);
+    public LoginListener(ItemChecker checker, FileConfiguration config, ChatFormatter chatFormatter) {
+        super(checker, config, chatFormatter);
     }
 
     @EventHandler

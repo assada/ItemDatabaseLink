@@ -55,7 +55,7 @@ public class Main extends JavaPlugin {
                 config.set("general.configVersion", 6);
                 config.set("general.addDescriptionToItems", true);
                 Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 6");
-            }
+            } //TODO: migrations to 7 version
 
             this.saveConfig();
         } else {
@@ -67,20 +67,22 @@ public class Main extends JavaPlugin {
         ItemChecker itemChecker = new DatabaseItemChecker(itemDataSource);
         Listener listener;
 
+        ChatFormatter chatFormatter = new SimpleChatFormatter(config);
+
         if (config.getBoolean("mysql.autoMigration", true)) {
             itemDataSource.migrate();
         }
 
         if (config.getBoolean("integration.AuthMe") && getServer().getPluginManager().getPlugin("AuthMe") != null) {
             Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] AuthMe detected! Using Login event instead Join...");
-            listener = new LoginListener(itemChecker, config);
+            listener = new LoginListener(itemChecker, config, chatFormatter);
         } else {
-            listener = new JoinListener(itemChecker, config);
+            listener = new JoinListener(itemChecker, config, chatFormatter);
         }
 
         getServer().getPluginManager().registerEvents(listener, this);
-        this.getCommand("claim").setExecutor(new ClaimCommand(config, itemChecker, this.getEconomy()));
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemCheckTask(itemChecker, config), 0L, config.getLong("general.checkTicks", 3600L));
+        this.getCommand("claim").setExecutor(new ClaimCommand(config, itemChecker, this.getEconomy(), chatFormatter));
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemCheckTask(itemChecker, config, chatFormatter), 0L, config.getLong("general.checkTicks", 3600L));
     }
 
     @Override

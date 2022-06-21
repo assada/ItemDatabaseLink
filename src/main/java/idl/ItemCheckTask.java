@@ -8,8 +8,8 @@ import java.util.Collection;
 
 public class ItemCheckTask extends AbstractItemNotifier implements Runnable {
 
-    public ItemCheckTask(ItemChecker checker, FileConfiguration config) {
-        super(checker, config);
+    public ItemCheckTask(ItemChecker checker, FileConfiguration config, ChatFormatter chatFormatter) {
+        super(checker, config, chatFormatter);
     }
 
     @Override
