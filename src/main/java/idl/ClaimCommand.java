@@ -65,7 +65,7 @@ public class ClaimCommand implements CommandExecutor {
                 player.sendMessage(this.chatFormatter.format("messages.no_rewards"));
             }
 
-            for (IDLItemStack itemRecord : itemsRecords) {
+            for (IDLItemStack itemRecord : itemsRecords) { //TODO: one message per one type (e.g You got 4 items)
                 Item idlItem = itemRecord.getItem();
                 //TODO: strategy
                 if (idlItem.getType().equals(Item.ITEM)) {
@@ -137,6 +137,7 @@ public class ClaimCommand implements CommandExecutor {
                 if (idlItem.getType().equals(Item.PERMISSION) && null != luckPermsApi) {
                     if (this.addPermission(player, idlItem.getValue(), idlItem.getQty())) {
                         gotIds.add(idlItem.getId());
+                        player.sendMessage(this.chatFormatter.format("messages.permission_claimed"));
                     }
                 }
             }

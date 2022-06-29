@@ -82,6 +82,7 @@ public class Main extends JavaPlugin {
             if(config.getInt("general.configVersion", 1) < 8) {
                 config.set("general.configVersion", 8);
                 config.set("messages.no_rewards", "&2No any rewards available =(");
+                config.set("messages.permission_claimed", "&2&lDone! &r&bNew permission in your pocket!");
                 Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 8");
             }
             this.saveConfig();

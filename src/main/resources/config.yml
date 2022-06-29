@@ -23,5 +23,6 @@ messages:
   money_claimed: '&2&lDone! &r&bYou were given &6&l%amount% &r&band now have &6&l%balance%'
   heal_claimed: '&2&lDone! &r&bYou are completely healed and completely full!'
   experience_claimed: '&2&lDone! &r&bExperience increased!'
+  permission_claimed: '&2&lDone! &r&bNew permission in your pocket!'
   new_rewards: '&2%amount% &6new rewards waiting for you. Use &f&l/claim &r&6command to claim it!'
   no_rewards: '&2No any rewards available =('
