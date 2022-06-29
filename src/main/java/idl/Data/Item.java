@@ -16,6 +16,7 @@ public class Item {
     public static String MONEY = "MONEY";
     public static String EFFECT = "EFFECT";
     public static String EXPERIENCE = "EXPERIENCE";
+    public static String PERMISSION = "PERMISSION";
 
     public Item(int id, String uuid, String type, String value, int qty, int status, Date created) {
         this.setId(id);

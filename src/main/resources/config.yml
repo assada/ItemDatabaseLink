@@ -1,12 +1,13 @@
 general:
-  configVersion: 7
+  configVersion: 8
   dropIfInventoryIsFull: true
   addDescriptionToItems: false
   description: 'From the Void'
   checkTicks: 3600 # 20 ticks in one second
   chatPrefix: '&r[&7IDL&r]'
 integration:
-  AuthMe: true
+  AuthMe: false
+  LuckPerms: false
 mysql:
   host: localhost
   port: 3306
@@ -23,3 +24,4 @@ messages:
   heal_claimed: '&2&lDone! &r&bYou are completely healed and completely full!'
   experience_claimed: '&2&lDone! &r&bExperience increased!'
   new_rewards: '&2%amount% &6new rewards waiting for you. Use &f&l/claim &r&6command to claim it!'
+  no_rewards: '&2No any rewards available =('

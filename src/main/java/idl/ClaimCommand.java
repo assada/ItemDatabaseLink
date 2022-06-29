@@ -2,6 +2,9 @@ package idl;
 
 import idl.Data.IDLItemStack;
 import idl.Data.Item;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -17,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +29,14 @@ public class ClaimCommand implements CommandExecutor {
     private final ItemChecker checker;
     private final Economy econ;
     private final ChatFormatter chatFormatter;
+    private final LuckPerms luckPermsApi;
 
-    public ClaimCommand(FileConfiguration config, ItemChecker checker, Economy economy, ChatFormatter chatFormatter) {
+    public ClaimCommand(FileConfiguration config, ItemChecker checker, Economy economy, ChatFormatter chatFormatter, LuckPerms luckPermsApi) {
         this.config = config;
         this.checker = checker;
         this.econ = economy;
         this.chatFormatter = chatFormatter;
+        this.luckPermsApi = luckPermsApi;
     }
 
     private ArrayList<PotionEffectType> getBedEffects() {
@@ -54,9 +60,14 @@ public class ClaimCommand implements CommandExecutor {
             List<IDLItemStack> items = new ArrayList<>();
             List<IDLItemStack> itemsRecords = this.checker.get(player);
             ArrayList<Integer> gotIds = new ArrayList<>();
+
+            if (itemsRecords.size() == 0) {
+                player.sendMessage(this.chatFormatter.format("messages.no_rewards"));
+            }
+
             for (IDLItemStack itemRecord : itemsRecords) {
                 Item idlItem = itemRecord.getItem();
-
+                //TODO: strategy
                 if (idlItem.getType().equals(Item.ITEM)) {
                     Material mat = Material.matchMaterial(idlItem.getValue().toUpperCase());
                     if (null != mat) {
@@ -81,7 +92,7 @@ public class ClaimCommand implements CommandExecutor {
                     try {
                         effects = true;
                         this.getBedEffects().forEach((effect) -> {
-                            if(effect == null) {
+                            if (effect == null) {
                                 Bukkit.getLogger().warning("[ItemDatabaseLink] null effect");
                             } else {
                                 Bukkit.getLogger().info("[ItemDatabaseLink] Ok effect " + effect.getName());
@@ -122,6 +133,12 @@ public class ClaimCommand implements CommandExecutor {
                         Bukkit.getLogger().warning("[ItemDatabaseLink] PotionEffect %s not found!".formatted(idlItem.getValue()));
                     }
                 }
+
+                if (idlItem.getType().equals(Item.PERMISSION) && null != luckPermsApi) {
+                    if (this.addPermission(player, idlItem.getValue(), idlItem.getQty())) {
+                        gotIds.add(idlItem.getId());
+                    }
+                }
             }
 
             if (items.size() > 0) {
@@ -156,6 +173,19 @@ public class ClaimCommand implements CommandExecutor {
                 this.checker.updateStatus(gotIds, ItemChecker.DONE); //TODO: Enum statuses?
             }
         }
+
+        return true;
+    }
+
+    private boolean addPermission(Player player, String permission, int duration) {
+        User user = luckPermsApi.getPlayerAdapter(Player.class).getUser(player);
+        Node node = Node.builder(permission)
+                .value(true)
+                .expiry(Duration.ofSeconds(duration))
+                .build();
+
+        user.data().add(node);
+        luckPermsApi.getUserManager().saveUser(user);
 
         return true;
     }

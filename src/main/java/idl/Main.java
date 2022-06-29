@@ -2,6 +2,7 @@ package idl;
 
 import idl.DataSource.ItemDataSource;
 import idl.DataSource.ItemMysqlDataSource;
+import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,6 +15,7 @@ public class Main extends JavaPlugin {
     FileConfiguration config = getConfig();
     MysqlDataSource dataSource = new MysqlDataSource(config);
     private static Economy econ;
+    private static LuckPerms LuckPermsApi;
 
     private boolean setupEconomy() {
         if (Bukkit.getServer().getPluginManager().getPlugin("Vault") == null) {
@@ -27,6 +29,21 @@ public class Main extends JavaPlugin {
         return econ != null;
     }
 
+    public boolean setupPermissions() { //TODO: Factory
+        if(!config.getBoolean("integration.LuckPerms", false)) {
+            return false;
+        }
+        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        if (provider != null) {
+            LuckPermsApi = provider.getProvider();
+            return true;
+        }
+
+        return false;
+    }
+    public static LuckPerms getLuckPermsApi() {
+        return LuckPermsApi;
+    }
     public static Economy getEconomy() {
         return econ;
     }
@@ -36,9 +53,14 @@ public class Main extends JavaPlugin {
         Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Enabled " + this.getName());
         if (!setupEconomy() ) {
             Bukkit.getLogger().severe(String.format("[%s] - No Vault soft-dependency found!", getDescription().getName()));
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+            /*getServer().getPluginManager().disablePlugin(this);
+            return;*/
         }
+
+        if(!setupPermissions()) {
+            Bukkit.getLogger().severe(String.format("[%s] - No LuckPerms soft-dependency found!", getDescription().getName()));
+        }
+
         if (config.getInt("general.configVersion", 1) < 5) { //config migration
             if (config.getInt("general.configVersion", 1) < 4) {
                 config.set("general.configVersion", 4);
@@ -57,6 +79,11 @@ public class Main extends JavaPlugin {
                 Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 6");
             } //TODO: migrations to 7 version
 
+            if(config.getInt("general.configVersion", 1) < 8) {
+                config.set("general.configVersion", 8);
+                config.set("messages.no_rewards", "&2No any rewards available =(");
+                Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Config migrated to version 8");
+            }
             this.saveConfig();
         } else {
             Bukkit.getLogger().info(ChatColor.GREEN + "[" + this.getName() + "] Creating default config");
@@ -81,7 +108,7 @@ public class Main extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(listener, this);
-        this.getCommand("claim").setExecutor(new ClaimCommand(config, itemChecker, this.getEconomy(), chatFormatter));
+        this.getCommand("claim").setExecutor(new ClaimCommand(config, itemChecker, getEconomy(), chatFormatter, getLuckPermsApi()));
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemCheckTask(itemChecker, config, chatFormatter), 0L, config.getLong("general.checkTicks", 3600L));
     }
 
